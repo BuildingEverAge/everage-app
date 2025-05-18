@@ -13,60 +13,35 @@ st.set_page_config(page_title="EverAge: Longevity Copilot", layout="wide")
 
 DATA_FILE = "data/user_data.json"
 
-# ========== LOGIN ==========
-username = st.text_input("👤 Enter your username").strip().lower()
+# ========== LOGIN PANEL ==========
+st.sidebar.title("🔐 EverAge Login")
+username = st.sidebar.text_input("Enter your email or username").strip().lower()
 if not username:
-    st.warning("Please enter a username to continue.")
+    st.warning("Please log in from the sidebar to continue.")
     st.stop()
 
-# ========== HELPER FUNCTIONS ==========
-def load_user_data(username):
+# ========== USER DATA HANDLING ==========
+def load_all_user_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r") as f:
-            data = json.load(f)
-        return data.get(username, {})
+            return json.load(f)
     return {}
 
-def save_user_data(username, user_data):
-    data = {}
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            data = json.load(f)
-    data[username] = user_data
+def save_all_user_data(all_data):
     with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+        json.dump(all_data, f, indent=2)
 
-def calculate_streaks(checkins, habits):
-    streaks = {habit: {"current": 0, "best": 0} for habit in habits}
-    habit_log = {habit: [] for habit in habits}
+def load_user_data():
+    all_data = load_all_user_data()
+    return all_data.get(username, {})
 
-    for entry in checkins:
-        date = datetime.strptime(entry["date"], "%Y-%m-%d").date()
-        for i, done in enumerate(entry["checked"]):
-            habit = habits[i]
-            habit_log[habit].append((date, done))
-
-    for habit, logs in habit_log.items():
-        logs.sort()
-        current = best = 0
-        previous_date = None
-        for date, done in logs:
-            if done:
-                if previous_date and (date - previous_date).days == 1:
-                    current += 1
-                else:
-                    current = 1
-                best = max(best, current)
-            else:
-                current = 0
-            previous_date = date
-        streaks[habit]["current"] = current
-        streaks[habit]["best"] = best
-
-    return streaks
+def save_user_data(user_data):
+    all_data = load_all_user_data()
+    all_data[username] = user_data
+    save_all_user_data(all_data)
 
 # ========== SESSION STATE INIT ==========
-user_data = load_user_data(username)
+user_data = load_user_data()
 if 'history' not in st.session_state:
     st.session_state.history = user_data.get("history", [])
 if 'habits' not in st.session_state:
@@ -101,7 +76,7 @@ def extract_habits(plan_text):
             {"role": "user", "content": plan_text}
         ]
     )
-    habits = [line.strip("•-• ").strip() for line in response.choices[0].message.content.strip().split("\n") if line.strip()]
+    habits = [line.strip("\u2022-• ").strip() for line in response.choices[0].message.content.strip().split("\n") if line.strip()]
     return habits[:5]
 
 def calculate_scores(prompt):
@@ -123,6 +98,35 @@ def calculate_scores(prompt):
                 continue
     return scores
 
+def calculate_streaks(checkins, habits):
+    streaks = {habit: {"current": 0, "best": 0} for habit in habits}
+    habit_log = {habit: [] for habit in habits}
+
+    for entry in checkins:
+        date = datetime.strptime(entry["date"], "%Y-%m-%d").date()
+        for i, done in enumerate(entry["checked"]):
+            habit = habits[i]
+            habit_log[habit].append((date, done))
+
+    for habit, logs in habit_log.items():
+        logs.sort()
+        current = best = 0
+        previous_date = None
+        for date, done in logs:
+            if done:
+                if previous_date and (date - previous_date).days == 1:
+                    current += 1
+                else:
+                    current = 1
+                best = max(best, current)
+            else:
+                current = 0
+            previous_date = date
+        streaks[habit]["current"] = current
+        streaks[habit]["best"] = best
+
+    return streaks
+
 # ========== PDF EXPORT ==========
 def generate_pdf(plan):
     pdf = FPDF()
@@ -133,7 +137,7 @@ def generate_pdf(plan):
     pdf.output(filename)
     with open(filename, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
-    href = f'<a href="data:application/octet-stream;base64,{b64}" download="longevity_plan.pdf">📄 Download Plan as PDF</a>'
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="longevity_plan.pdf">\ud83d\udcc4 Download Plan as PDF</a>'
     return href
 
 # ========== CHART ==========
@@ -147,19 +151,19 @@ def show_progress_chart():
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.bar(labels, values, color='green')
     ax.set_ylabel("Habits Completed")
-    ax.set_title("📊 Weekly Habit Progress")
+    ax.set_title("\ud83d\udcca Weekly Habit Progress")
     ax.set_ylim(0, 5)
     ax.set_xticks(range(len(labels)))
     ax.set_xticklabels(labels, rotation=45)
     st.pyplot(fig)
 
-# ========== UI LAYOUT ==========
-st.title("🧬 EverAge: Your Longevity Copilot")
-tabs = st.tabs(["📝 Create Plan", "✅ Daily Tracker", "📊 Progress", "📄 Export Plan"])
+# ========== UI ==========
+st.title("\ud83e\uddec EverAge: Your Longevity Copilot")
+tabs = st.tabs(["\ud83d\udcdd Create Plan", "\u2705 Daily Tracker", "\ud83d\udcc8 Progress", "\ud83d\udcc4 Export Plan"])
 
-# --- Tab 1: Plan Creation ---
+# --- Tab 1 ---
 with tabs[0]:
-    st.subheader("Tell us about yourself 🧠")
+    st.subheader("Tell us about yourself \ud83e\udde0")
     age = st.number_input("Age", min_value=18, max_value=100)
     activity = st.selectbox("Activity Level", ["Low", "Moderate", "High"])
     sleep = st.selectbox("Sleep Quality", ["Poor", "Average", "Good"])
@@ -167,56 +171,56 @@ with tabs[0]:
     diet = st.selectbox("Diet Type", ["Standard", "Vegetarian", "Keto", "Mediterranean"])
     goals = st.text_area("Describe your longevity/health goals")
 
-    if st.button("🧪 Generate My Longevity Plan"):
+    if st.button("\ud83e\uddea Generate My Longevity Plan"):
         prompt = f"Age: {age}, Activity: {activity}, Sleep: {sleep}, Stress: {stress}, Diet: {diet}, Goals: {goals}"
         plan = get_ai_plan(prompt)
         st.session_state.history.append(plan)
         st.session_state.habits = extract_habits(plan)
         st.session_state.scores = calculate_scores(prompt)
-        save_user_data(username, {
+        save_user_data({
             "history": st.session_state.history,
             "habits": st.session_state.habits,
             "scores": st.session_state.scores,
             "checkins": st.session_state.checkins
         })
-        st.success("✅ Plan created!")
+        st.success("\u2705 Plan created!")
         st.markdown(plan)
 
-# --- Tab 2: Daily Habit Tracker ---
+# --- Tab 2 ---
 with tabs[1]:
-    st.subheader("📅 Track Today’s Habits")
+    st.subheader("\ud83d\uddd3 Track Today’s Habits")
     if st.session_state.habits:
         today = datetime.now().strftime("%Y-%m-%d")
         checks = [st.checkbox(habit) for habit in st.session_state.habits]
         if st.button("Submit Today’s Check-in"):
             st.session_state.checkins.append({"date": today, "checked": checks})
-            save_user_data(username, {
+            save_user_data({
                 "history": st.session_state.history,
                 "habits": st.session_state.habits,
                 "scores": st.session_state.scores,
                 "checkins": st.session_state.checkins
             })
-            st.success("📌 Logged successfully!")
+            st.success("\ud83d\udccc Logged successfully!")
     else:
         st.info("Please generate a plan to track habits.")
 
-# --- Tab 3: Weekly Progress ---
+# --- Tab 3 ---
 with tabs[2]:
-    st.subheader("📈 Weekly Progress")
+    st.subheader("\ud83d\udcc8 Weekly Progress")
     show_progress_chart()
     if st.session_state.scores:
-        st.markdown("**🧠 Health Scores (0–100):**")
+        st.markdown("**\ud83e\udde0 Health Scores (0–100):**")
         for k, v in st.session_state.scores.items():
             st.progress(v / 100, text=f"{k}: {v}")
     if st.session_state.habits:
-        st.subheader("🔥 Habit Streaks")
+        st.subheader("\ud83d\udd25 Habit Streaks")
         streaks = calculate_streaks(st.session_state.checkins, st.session_state.habits)
         for habit, data in streaks.items():
-            st.markdown(f"**{habit}** — Current: {data['current']} 🔁 | Best: {data['best']} 🏆")
+            st.markdown(f"**{habit}** — Current: {data['current']} \ud83d\udd01 | Best: {data['best']} \ud83c\udfc6")
 
-# --- Tab 4: Export ---
+# --- Tab 4 ---
 with tabs[3]:
-    st.subheader("📄 Download Your Plan")
+    st.subheader("\ud83d\udcc4 Download Your Plan")
     if st.session_state.history:
         latest_plan = st.session_state.history[-1]
         st.markdown(generate_pdf(latest_plan), unsafe_allow_html=True)
