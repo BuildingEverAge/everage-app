@@ -76,7 +76,7 @@ def extract_habits(plan_text):
             {"role": "user", "content": plan_text}
         ]
     )
-    habits = [line.strip("\u2022-• ").strip() for line in response.choices[0].message.content.strip().split("\n") if line.strip()]
+    habits = [line.strip("•- ").strip() for line in response.choices[0].message.content.strip().split("\n") if line.strip()]
     return habits[:5]
 
 def calculate_scores(prompt):
@@ -137,7 +137,7 @@ def generate_pdf(plan):
     pdf.output(filename)
     with open(filename, "rb") as f:
         b64 = base64.b64encode(f.read()).decode()
-    href = f'<a href="data:application/octet-stream;base64,{b64}" download="longevity_plan.pdf">\ud83d\udcc4 Download Plan as PDF</a>'
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="longevity_plan.pdf">📄 Download Plan as PDF</a>'
     return href
 
 # ========== CHART ==========
@@ -151,19 +151,19 @@ def show_progress_chart():
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.bar(labels, values, color='green')
     ax.set_ylabel("Habits Completed")
-    ax.set_title("\ud83d\udcca Weekly Habit Progress")
+    ax.set_title("📊 Weekly Habit Progress")
     ax.set_ylim(0, 5)
     ax.set_xticks(range(len(labels)))
     ax.set_xticklabels(labels, rotation=45)
     st.pyplot(fig)
 
 # ========== UI ==========
-st.title("\ud83e\uddec EverAge: Your Longevity Copilot")
-tabs = st.tabs(["\ud83d\udcdd Create Plan", "\u2705 Daily Tracker", "\ud83d\udcc8 Progress", "\ud83d\udcc4 Export Plan"])
+st.title("🧬 EverAge: Your Longevity Copilot")
+tabs = st.tabs(["📝 Create Plan", "✅ Daily Tracker", "📈 Progress", "📄 Export Plan"])
 
 # --- Tab 1 ---
 with tabs[0]:
-    st.subheader("Tell us about yourself \ud83e\udde0")
+    st.subheader("Tell us about yourself 🧠")
     age = st.number_input("Age", min_value=18, max_value=100)
     activity = st.selectbox("Activity Level", ["Low", "Moderate", "High"])
     sleep = st.selectbox("Sleep Quality", ["Poor", "Average", "Good"])
@@ -171,7 +171,7 @@ with tabs[0]:
     diet = st.selectbox("Diet Type", ["Standard", "Vegetarian", "Keto", "Mediterranean"])
     goals = st.text_area("Describe your longevity/health goals")
 
-    if st.button("\ud83e\uddea Generate My Longevity Plan"):
+    if st.button("🧪 Generate My Longevity Plan"):
         prompt = f"Age: {age}, Activity: {activity}, Sleep: {sleep}, Stress: {stress}, Diet: {diet}, Goals: {goals}"
         plan = get_ai_plan(prompt)
         st.session_state.history.append(plan)
@@ -183,12 +183,12 @@ with tabs[0]:
             "scores": st.session_state.scores,
             "checkins": st.session_state.checkins
         })
-        st.success("\u2705 Plan created!")
+        st.success("✅ Plan created!")
         st.markdown(plan)
 
 # --- Tab 2 ---
 with tabs[1]:
-    st.subheader("\ud83d\uddd3 Track Today’s Habits")
+    st.subheader("🗓️ Track Today’s Habits")
     if st.session_state.habits:
         today = datetime.now().strftime("%Y-%m-%d")
         checks = [st.checkbox(habit) for habit in st.session_state.habits]
@@ -200,27 +200,27 @@ with tabs[1]:
                 "scores": st.session_state.scores,
                 "checkins": st.session_state.checkins
             })
-            st.success("\ud83d\udccc Logged successfully!")
+            st.success("📌 Logged successfully!")
     else:
         st.info("Please generate a plan to track habits.")
 
 # --- Tab 3 ---
 with tabs[2]:
-    st.subheader("\ud83d\udcc8 Weekly Progress")
+    st.subheader("📈 Weekly Progress")
     show_progress_chart()
     if st.session_state.scores:
-        st.markdown("**\ud83e\udde0 Health Scores (0–100):**")
+        st.markdown("**🧠 Health Scores (0–100):**")
         for k, v in st.session_state.scores.items():
             st.progress(v / 100, text=f"{k}: {v}")
     if st.session_state.habits:
-        st.subheader("\ud83d\udd25 Habit Streaks")
+        st.subheader("🔥 Habit Streaks")
         streaks = calculate_streaks(st.session_state.checkins, st.session_state.habits)
         for habit, data in streaks.items():
-            st.markdown(f"**{habit}** — Current: {data['current']} \ud83d\udd01 | Best: {data['best']} \ud83c\udfc6")
+            st.markdown(f"**{habit}** — Current: {data['current']} 🔁 | Best: {data['best']} 🏆")
 
 # --- Tab 4 ---
 with tabs[3]:
-    st.subheader("\ud83d\udcc4 Download Your Plan")
+    st.subheader("📄 Download Your Plan")
     if st.session_state.history:
         latest_plan = st.session_state.history[-1]
         st.markdown(generate_pdf(latest_plan), unsafe_allow_html=True)
