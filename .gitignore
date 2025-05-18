@@ -1,2 +1,24 @@
-".streamlit/secrets.toml" 
-".streamlit/secrets.toml" 
+# === Python artifacts ===
+__pycache__/
+*.py[cod]
+*.log
+*.tmp
+
+# === Virtual environment ===
+.venv/
+env/
+venv/
+
+# === Streamlit secrets ===
+.streamlit/secrets.toml
+
+# === User data (optional, for privacy) ===
+data/user_data.json
+
+# === Editor folders ===
+.vscode/
+.idea/
+
+# === OS junk ===
+.DS_Store
+Thumbs.db
