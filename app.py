@@ -21,9 +21,9 @@ st.set_page_config(page_title="EverAge: Longevity Copilot", layout="wide")
 DATA_FILE = "data/user_data.json"
 
 # ========== SAFE RERUN FIX ==========
-if st.session_state.get('_rerun_trigger'):
+if "_rerun_trigger" in st.session_state and st.session_state._rerun_trigger:
     st.session_state._rerun_trigger = False
-    st.stop()  # Let Streamlit re-render cleanly
+    st.experimental_rerun()
 
 # ========== EMAIL FUNCTION ==========
 def send_email_with_pdf(to_email, pdf_path):
@@ -140,7 +140,7 @@ def run_onboarding():
             save_user_data({**user_data, **profile})
             st.session_state.onboarding_complete = True
             st.session_state._rerun_trigger = True
-            st.stop()
+            st.experimental_rerun()
 
 if not st.session_state.onboarding_complete:
     run_onboarding()
@@ -148,8 +148,6 @@ if not st.session_state.onboarding_complete:
 
 # ========== CONTINUE MAIN TABS, TRACKER, EXPORT, ETC. BELOW THIS LINE ==========
 
-
-# ========== CONTINUE MAIN TABS, TRACKER, EXPORT, ETC. BELOW THIS LINE ==========
 
 
 # ========== SIDEBAR PROFILE ==========
