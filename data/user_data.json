@@ -37,7 +37,18 @@
           true,
           true
         ]
+      },
+      {
+        "date": "2025-05-20",
+        "checked": [
+          true,
+          false,
+          false,
+          false,
+          false
+        ]
       }
-    ]
+    ],
+    "user_email": ""
   }
 }
