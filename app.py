@@ -260,14 +260,28 @@ with tabs[3]:
     st.subheader("📄 Download & Email Your Plan")
     if st.session_state.history:
         latest_plan = st.session_state.history[-1]
-        pdf_path = "longevity_plan.pdf"
-        st.markdown(generate_pdf(latest_plan), unsafe_allow_html=True)
+       pdf_path = "longevity_plan.pdf"
 
-        email_input = st.text_input("📬 Enter your email to receive this plan:")
-        if st.button("Send Plan via Email"):
-            if send_email_with_pdf(email_input, pdf_path):
-                st.success("✅ Email sent successfully!")
-            else:
-                st.error("❌ Failed to send email. Please try again.")
+# Save the PDF to disk
+pdf = FPDF()
+pdf.add_page()
+pdf.set_font("Arial", size=12)
+pdf.multi_cell(0, 10, latest_plan)
+pdf.output(pdf_path)
+
+# Show download link
+with open(pdf_path, "rb") as f:
+    b64 = base64.b64encode(f.read()).decode()
+    href = f'<a href="data:application/octet-stream;base64,{b64}" download="longevity_plan.pdf">📄 Download Plan as PDF</a>'
+    st.markdown(href, unsafe_allow_html=True)
+
+# Email input + send
+email_input = st.text_input("📬 Enter your email to receive this plan:")
+if st.button("Send Plan via Email"):
+    if send_email_with_pdf(email_input, pdf_path):
+        st.success("✅ Email sent successfully!")
+    else:
+        st.error("❌ Failed to send email. Please try again.")
+
     else:
         st.info("No plan to export yet.")
