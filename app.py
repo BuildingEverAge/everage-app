@@ -23,8 +23,8 @@ DATA_FILE = "data/user_data.json"
 # ========== SAFE RERUN FIX ==========
 if st.session_state.get('_rerun_trigger'):
     st.session_state._rerun_trigger = False
-    st.session_state._rerun_trigger = True
-st.stop()
+    st.experimental_rerun()
+
 
 
 
