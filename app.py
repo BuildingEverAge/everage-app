@@ -160,7 +160,8 @@ st.sidebar.markdown(f"**Goals:** {user_data.get('goals', 'N/A')}")
 if st.sidebar.button("✏️ Edit Profile"):
     st.session_state.onboarding_complete = False
     st.session_state.onboarding_step = 0
-    st.experimental_rerun()
+    st.session_state._rerun_trigger = True
+
 
 # ========== AI FUNCTIONS ==========
 def get_ai_plan(prompt):
