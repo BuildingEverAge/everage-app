@@ -1,4 +1,4 @@
-# ✔️ EverAge App: Unified Version
+# ✅ EverAge App: Unified Version
 # - Onboarding flow
 # - Profile display + update in sidebar
 # - Editable plan inputs
@@ -23,7 +23,7 @@ DATA_FILE = "data/user_data.json"
 # ========== SAFE RERUN FIX ==========
 if st.session_state.get('_rerun_trigger'):
     st.session_state._rerun_trigger = False
-    st.experimental_rerun()
+    st.stop()  # Let Streamlit re-render cleanly
 
 # ========== EMAIL FUNCTION ==========
 def send_email_with_pdf(to_email, pdf_path):
@@ -40,7 +40,7 @@ def send_email_with_pdf(to_email, pdf_path):
         },
         "content": [{
             "type": "text/plain",
-            "value": "Hi! Here’s your personalized EverAge longevity plan attached as a PDF. 🚊"
+            "value": "Hi! Here’s your personalized EverAge longevity plan attached as a PDF. 🙊"
         }],
         "attachments": [{
             "content": file_data,
@@ -140,10 +140,14 @@ def run_onboarding():
             save_user_data({**user_data, **profile})
             st.session_state.onboarding_complete = True
             st.session_state._rerun_trigger = True
+            st.stop()
 
 if not st.session_state.onboarding_complete:
     run_onboarding()
     st.stop()
+
+# ========== CONTINUE MAIN TABS, TRACKER, EXPORT, ETC. BELOW THIS LINE ==========
+
 
 # ========== CONTINUE MAIN TABS, TRACKER, EXPORT, ETC. BELOW THIS LINE ==========
 
