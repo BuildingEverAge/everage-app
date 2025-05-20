@@ -163,6 +163,7 @@ if st.sidebar.button("✏️ Edit Profile"):
     st.session_state._rerun_trigger = True
 
 
+
 # ========== AI FUNCTIONS ==========
 def get_ai_plan(prompt):
     structured_prompt = f"{prompt}\n\nPlease return a clearly formatted longevity plan with these sections:\n- Sleep\n- Exercise\n- Diet\n- Stress Management\nInclude 5 daily habits in a section titled 'Daily Habits'."
