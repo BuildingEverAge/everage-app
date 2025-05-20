@@ -1,4 +1,4 @@
-# ✅ EverAge App: Unified Version
+# ✔️ EverAge App: Unified Version
 # - Onboarding flow
 # - Profile display + update in sidebar
 # - Editable plan inputs
@@ -20,6 +20,11 @@ openai.api_key = st.secrets["openai"]["api_key"]
 st.set_page_config(page_title="EverAge: Longevity Copilot", layout="wide")
 DATA_FILE = "data/user_data.json"
 
+# ========== SAFE RERUN FIX ==========
+if st.session_state.get('_rerun_trigger'):
+    st.session_state._rerun_trigger = False
+    st.experimental_rerun()
+
 # ========== EMAIL FUNCTION ==========
 def send_email_with_pdf(to_email, pdf_path):
     with open(pdf_path, "rb") as f:
@@ -35,7 +40,7 @@ def send_email_with_pdf(to_email, pdf_path):
         },
         "content": [{
             "type": "text/plain",
-            "value": "Hi! Here’s your personalized EverAge longevity plan attached as a PDF. 🙊"
+            "value": "Hi! Here’s your personalized EverAge longevity plan attached as a PDF. 🚊"
         }],
         "attachments": [{
             "content": file_data,
@@ -84,6 +89,7 @@ def save_user_data(user_data):
 # ========== SESSION STATE INIT ==========
 user_data = load_user_data()
 st.session_state.setdefault("onboarding_complete", user_data.get("onboarding_complete", False))
+st.session_state.setdefault("onboarding_step", 0)
 st.session_state.setdefault("history", user_data.get("history", []))
 st.session_state.setdefault("habits", user_data.get("habits", []))
 st.session_state.setdefault("scores", user_data.get("scores", {}))
@@ -133,12 +139,14 @@ def run_onboarding():
             }
             save_user_data({**user_data, **profile})
             st.session_state.onboarding_complete = True
-            st.success("🎉 You're all set!")
-            st.experimental_rerun()
+            st.session_state._rerun_trigger = True
 
 if not st.session_state.onboarding_complete:
     run_onboarding()
     st.stop()
+
+# ========== CONTINUE MAIN TABS, TRACKER, EXPORT, ETC. BELOW THIS LINE ==========
+
 
 # ========== SIDEBAR PROFILE ==========
 st.sidebar.markdown("---")
