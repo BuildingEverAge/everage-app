@@ -139,14 +139,16 @@ def run_onboarding():
             }
             save_user_data({**user_data, **profile})
             st.session_state.onboarding_complete = True
-            st.session_state._rerun_trigger = True
-            st.stop()
+            if not st.session_state.get("_rerun_trigger"):
+                st.session_state._rerun_trigger = True
+                st.experimental_rerun()
 
 if not st.session_state.onboarding_complete:
     run_onboarding()
     st.stop()
 
 # ========== CONTINUE MAIN TABS, TRACKER, EXPORT, ETC. BELOW THIS LINE ==========
+
 
 
 
