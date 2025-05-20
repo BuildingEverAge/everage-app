@@ -20,10 +20,21 @@ openai.api_key = st.secrets["openai"]["api_key"]
 st.set_page_config(page_title="EverAge: Longevity Copilot", layout="wide")
 DATA_FILE = "data/user_data.json"
 
-# ========== SAFE RERUN FIX ==========
+# ========== USER LOGIN ==========
+st.image("static/everage_logo.png", width=300)
+st.sidebar.title("🔐 EverAge Login")
+username = st.sidebar.text_input("Enter your email or username").strip().lower()
+
+if not username:
+    st.warning("Please log in from the sidebar to continue.")
+    st.stop()
+
+# ✅ Safe rerun fix (after user input is initialized)
 if st.session_state.get("_rerun_trigger", False):
     st.session_state._rerun_trigger = False
     st.experimental_rerun()
+
+st.write("✅ Logged in as:", username)
 
 # ========== EMAIL FUNCTION ==========
 def send_email_with_pdf(to_email, pdf_path):
@@ -58,17 +69,6 @@ def send_email_with_pdf(to_email, pdf_path):
         json=data
     )
     return response.status_code == 202
-
-# ========== USER LOGIN ==========
-st.image("static/everage_logo.png", width=300)
-st.sidebar.title("🔐 EverAge Login")
-username = st.sidebar.text_input("Enter your email or username").strip().lower()
-
-if not username:
-    st.warning("Please log in from the sidebar to continue.")
-    st.stop()
-
-st.write("✅ Logged in as:", username)
 
 # ========== DATA LOAD/SAVE ==========
 def load_all_user_data():
