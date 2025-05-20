@@ -26,14 +26,14 @@ def send_email_with_pdf(to_email, pdf_path):
     data = {
         "personalizations": [{
             "to": [{"email": to_email}],
-            "subject": "Your EverAge Longevity Plan \ud83d\udcc4"
+            "subject": "Your EverAge Longevity Plan 📄"
         }],
         "from": {
             "email": st.secrets["sendgrid"]["from_email"]
         },
         "content": [{
             "type": "text/plain",
-            "value": "Hi! Here’s your personalized EverAge longevity plan attached as a PDF. \ud83d\ude4a"
+            "value": "Hi! Here’s your personalized EverAge longevity plan attached as a PDF. 🙊"
         }],
         "attachments": [{
             "content": file_data,
@@ -54,12 +54,12 @@ def send_email_with_pdf(to_email, pdf_path):
 
 # ========== USER LOGIN ==========
 st.image("static/everage_logo.png", width=300)
-st.sidebar.title("\ud83d\udd10 EverAge Login")
+st.sidebar.title("🔐 EverAge Login")
 username = st.sidebar.text_input("Enter your email or username").strip().lower()
 if not username:
     st.warning("Please log in from the sidebar to continue.")
     st.stop()
-st.write("\u2705 Logged in as:", username)
+st.write("✅ Logged in as:", username)
 
 # ========== DATA LOAD/SAVE ==========
 def load_all_user_data():
@@ -92,7 +92,7 @@ st.session_state.setdefault("user_email", user_data.get("user_email", ""))
 
 # ========== ONBOARDING FLOW ==========
 def run_onboarding():
-    st.title("\ud83d\udc4b Welcome to EverAge")
+    st.title("👋 Welcome to EverAge")
     st.markdown("Let's personalize your experience with a few quick questions.")
     step = st.session_state.get("onboarding_step", 0)
 
@@ -141,6 +141,7 @@ if not st.session_state.onboarding_complete:
     st.stop()
 
 # ===== The rest of your app continues here (tabs, AI, tracker, export, etc.) =====
+
 
 
 
