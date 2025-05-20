@@ -29,11 +29,6 @@ if not username:
     st.warning("Please log in from the sidebar to continue.")
     st.stop()
 
-# ✅ Safe rerun fix (after user input is initialized)
-if st.session_state.get("_rerun_trigger", False):
-    st.session_state._rerun_trigger = False
-    st.experimental_rerun()
-
 st.write("✅ Logged in as:", username)
 
 # ========== EMAIL FUNCTION ==========
@@ -150,3 +145,8 @@ def run_onboarding():
 if not st.session_state.onboarding_complete:
     run_onboarding()
     st.stop()
+
+# ✅ Safe rerun trigger moved here to avoid early crash
+if st.session_state.get("_rerun_trigger", False):
+    st.session_state._rerun_trigger = False
+    st.experimental_rerun()
