@@ -1,4 +1,3 @@
-Make it you:
 # ✅ EverAge App: Unified Version
 # - Onboarding flow
 # - Profile display + update in sidebar
