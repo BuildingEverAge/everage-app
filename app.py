@@ -63,6 +63,7 @@ def send_email_with_pdf(to_email, pdf_path):
 st.image("static/everage_logo.png", width=300)
 st.sidebar.title("🔐 EverAge Login")
 username = st.sidebar.text_input("Enter your email or username").strip().lower()
+st.write("✅ Logged in as:", username)
 if not username:
     st.warning("Please log in from the sidebar to continue.")
     st.stop()
@@ -98,6 +99,7 @@ st.session_state.setdefault("user_email", user_data.get("user_email", ""))
 
 # ========== ONBOARDING FLOW ==========
 def run_onboarding():
+    st.write("🧪 Entered onboarding flow")
     st.title("👋 Welcome to EverAge")
     st.markdown("Let's personalize your experience with a few quick questions.")
     step = st.session_state.get("onboarding_step", 0)
@@ -147,6 +149,7 @@ if not st.session_state.onboarding_complete:
     st.stop()
 
 # ========== CONTINUE MAIN TABS, TRACKER, EXPORT, ETC. BELOW THIS LINE ==========
+
 
 
 
