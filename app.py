@@ -1,3 +1,4 @@
+Make it you:
 # ✅ EverAge App: Unified Version
 # - Onboarding flow
 # - Profile display + update in sidebar
@@ -19,15 +20,6 @@ import requests
 openai.api_key = st.secrets["openai"]["api_key"]
 st.set_page_config(page_title="EverAge: Longevity Copilot", layout="wide")
 DATA_FILE = "data/user_data.json"
-
-# ========== SAFE RERUN FIX ==========
-if st.session_state.get('_rerun_trigger'):
-    st.session_state._rerun_trigger = False
-    st.experimental_rerun()
-
-
-
-
 
 # ========== EMAIL FUNCTION ==========
 def send_email_with_pdf(to_email, pdf_path):
@@ -63,7 +55,7 @@ def send_email_with_pdf(to_email, pdf_path):
     )
     return response.status_code == 202
 
-# ========== USER LOGIN & DATA ==========
+# ========== USER LOGIN ==========
 st.image("static/everage_logo.png", width=300)
 st.sidebar.title("🔐 EverAge Login")
 username = st.sidebar.text_input("Enter your email or username").strip().lower()
@@ -83,21 +75,83 @@ def save_all_user_data(all_data):
         json.dump(all_data, f, indent=2)
 
 def load_user_data():
-    all_data = load_all_user_data()
-    return all_data.get(username, {})
+    return load_all_user_data().get(username, {})
 
 def save_user_data(user_data):
     all_data = load_all_user_data()
     all_data[username] = user_data
     save_all_user_data(all_data)
 
-# ========== SESSION INIT ==========
+# ========== SESSION STATE INIT ==========
 user_data = load_user_data()
+st.session_state.setdefault("onboarding_complete", user_data.get("onboarding_complete", False))
 st.session_state.setdefault("history", user_data.get("history", []))
 st.session_state.setdefault("habits", user_data.get("habits", []))
 st.session_state.setdefault("scores", user_data.get("scores", {}))
 st.session_state.setdefault("checkins", user_data.get("checkins", []))
 st.session_state.setdefault("user_email", user_data.get("user_email", ""))
+
+# ========== ONBOARDING FLOW ==========
+def run_onboarding():
+    st.title("👋 Welcome to EverAge")
+    st.markdown("Let's personalize your experience with a few quick questions.")
+    step = st.session_state.get("onboarding_step", 0)
+
+    if step == 0:
+        st.session_state.name = st.text_input("What's your name?")
+        if st.button("Next") and st.session_state.name:
+            st.session_state.onboarding_step = 1
+
+    elif step == 1:
+        st.session_state.age = st.number_input("Your Age", min_value=18, max_value=100, value=30)
+        st.session_state.gender = st.selectbox("Gender (optional)", ["Prefer not to say", "Male", "Female", "Other"])
+        if st.button("Next"):
+            st.session_state.onboarding_step = 2
+
+    elif step == 2:
+        st.session_state.activity = st.selectbox("Activity Level", ["Low", "Moderate", "High"])
+        st.session_state.sleep = st.selectbox("Sleep Quality", ["Poor", "Average", "Good"])
+        st.session_state.stress = st.selectbox("Stress Level", ["High", "Moderate", "Low"])
+        st.session_state.diet = st.selectbox("Diet Type", ["Standard", "Vegetarian", "Keto", "Mediterranean"])
+        if st.button("Next"):
+            st.session_state.onboarding_step = 3
+
+    elif step == 3:
+        st.session_state.goals = st.text_area("Describe your main health and longevity goals")
+        st.session_state.user_email = st.text_input("Your Email", value=st.session_state.user_email)
+        if st.button("Finish") and st.session_state.goals and st.session_state.user_email:
+            profile = {
+                "name": st.session_state.name,
+                "age": st.session_state.age,
+                "gender": st.session_state.gender,
+                "activity": st.session_state.activity,
+                "sleep": st.session_state.sleep,
+                "stress": st.session_state.stress,
+                "diet": st.session_state.diet,
+                "goals": st.session_state.goals,
+                "user_email": st.session_state.user_email,
+                "onboarding_complete": True
+            }
+            save_user_data({**user_data, **profile})
+            st.session_state.onboarding_complete = True
+            st.success("🎉 You're all set!")
+            st.experimental_rerun()
+
+if not st.session_state.onboarding_complete:
+    run_onboarding()
+    st.stop()
+
+# ========== SIDEBAR PROFILE ==========
+st.sidebar.markdown("---")
+st.sidebar.header("👤 Your Profile")
+st.sidebar.markdown(f"**Name:** {user_data.get('name', 'N/A')}")
+st.sidebar.markdown(f"**Age:** {user_data.get('age', 'N/A')}")
+st.sidebar.markdown(f"**Goals:** {user_data.get('goals', 'N/A')}")
+
+if st.sidebar.button("✏️ Edit Profile"):
+    st.session_state.onboarding_complete = False
+    st.session_state.onboarding_step = 0
+    st.experimental_rerun()
 
 # ========== AI FUNCTIONS ==========
 def get_ai_plan(prompt):
@@ -161,46 +215,19 @@ def calculate_streaks(checkins, habits):
         streaks[h] = {"current": cur, "best": best}
     return streaks
 
-# ========== PDF UTILS ==========
-def generate_pdf(plan):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, plan)
-    filename = "longevity_plan.pdf"
-    pdf.output(filename)
-    with open(filename, "rb") as f:
-        b64 = base64.b64encode(f.read()).decode()
-    return f'<a href="data:application/octet-stream;base64,{b64}" download="longevity_plan.pdf">📄 Download Plan</a>'
-
-# ========== CHART ==========
-def show_progress_chart():
-    if not st.session_state.checkins:
-        st.info("No check-ins yet.")
-        return
-    labels = [c["date"] for c in st.session_state.checkins]
-    values = [sum(c["checked"]) for c in st.session_state.checkins]
-    fig, ax = plt.subplots(figsize=(8, 4))
-    ax.bar(labels, values)
-    ax.set_title("📊 Weekly Habit Progress")
-    ax.set_ylabel("Habits Completed")
-    ax.set_ylim(0, 5)
-    ax.set_xticklabels(labels, rotation=45)
-    st.pyplot(fig)
-
-# ========== UI ==========
+# ========== MAIN TABS ==========
 st.title("🧬 EverAge: Your Longevity Copilot")
 tabs = st.tabs(["📝 Create Plan", "✅ Tracker", "📈 Progress", "📄 Export"])
 
-# --- Tab 1 ---
+# --- Tab 1: Create Plan ---
 with tabs[0]:
     st.subheader("Tell us about yourself 🧠")
-    age = st.number_input("Age", min_value=18, max_value=100)
-    activity = st.selectbox("Activity Level", ["Low", "Moderate", "High"])
-    sleep = st.selectbox("Sleep Quality", ["Poor", "Average", "Good"])
-    stress = st.selectbox("Stress Level", ["High", "Moderate", "Low"])
-    diet = st.selectbox("Diet Type", ["Standard", "Vegetarian", "Keto", "Mediterranean"])
-    goals = st.text_area("Health Goals")
+    age = st.number_input("Age", min_value=18, max_value=100, value=user_data.get("age", 30))
+    activity = st.selectbox("Activity Level", ["Low", "Moderate", "High"], index=["Low", "Moderate", "High"].index(user_data.get("activity", "Moderate")))
+    sleep = st.selectbox("Sleep Quality", ["Poor", "Average", "Good"], index=["Poor", "Average", "Good"].index(user_data.get("sleep", "Average")))
+    stress = st.selectbox("Stress Level", ["High", "Moderate", "Low"], index=["High", "Moderate", "Low"].index(user_data.get("stress", "Moderate")))
+    diet = st.selectbox("Diet Type", ["Standard", "Vegetarian", "Keto", "Mediterranean"], index=["Standard", "Vegetarian", "Keto", "Mediterranean"].index(user_data.get("diet", "Standard")))
+    goals = st.text_area("Health Goals", value=user_data.get("goals", ""))
     email = st.text_input("Your Email", value=st.session_state.user_email)
 
     if st.button("🧪 Generate My Longevity Plan"):
@@ -211,6 +238,7 @@ with tabs[0]:
         st.session_state.scores = calculate_scores(prompt)
         st.session_state.user_email = email
         save_user_data({
+            **user_data,
             "history": st.session_state.history,
             "habits": st.session_state.habits,
             "scores": st.session_state.scores,
@@ -228,7 +256,7 @@ with tabs[0]:
         st.session_state.scores = calculate_scores(prompt)
         st.markdown(plan)
 
-# --- Tab 2 ---
+# --- Tab 2: Daily Tracker ---
 with tabs[1]:
     st.subheader("🗓️ Daily Check-in")
     if st.session_state.habits:
@@ -237,6 +265,7 @@ with tabs[1]:
         if st.button("Submit Today’s Check-in"):
             st.session_state.checkins.append({"date": today, "checked": checks})
             save_user_data({
+                **user_data,
                 "history": st.session_state.history,
                 "habits": st.session_state.habits,
                 "scores": st.session_state.scores,
@@ -247,30 +276,43 @@ with tabs[1]:
     else:
         st.info("Please generate a plan first.")
 
-# --- Tab 3 ---
+# --- Tab 3: Progress ---
 with tabs[2]:
     st.subheader("📈 Weekly Progress")
-    show_progress_chart()
+    if not st.session_state.checkins:
+        st.info("No check-ins yet.")
+    else:
+        labels = [c["date"] for c in st.session_state.checkins]
+        values = [sum(c["checked"]) for c in st.session_state.checkins]
+        fig, ax = plt.subplots(figsize=(8, 4))
+        ax.bar(labels, values)
+        ax.set_title("📊 Weekly Habit Progress")
+        ax.set_ylabel("Habits Completed")
+        ax.set_ylim(0, 5)
+        ax.set_xticklabels(labels, rotation=45)
+        st.pyplot(fig)
+
     if st.session_state.scores:
         st.markdown("**🧠 Health Scores:**")
         for k, v in st.session_state.scores.items():
             st.progress(v / 100, text=f"{k}: {v}")
+
     if st.session_state.habits:
         streaks = calculate_streaks(st.session_state.checkins, st.session_state.habits)
         st.subheader("🔥 Habit Streaks")
         for h, s in streaks.items():
             st.markdown(f"**{h}** — Current: {s['current']} 🔁 | Best: {s['best']} 🏆")
 
-# --- Tab 4 ---
+# --- Tab 4: Export Plan ---
 with tabs[3]:
     st.subheader("📄 Export Plan")
     if st.session_state.history:
         latest_plan = st.session_state.history[-1]
-        pdf_path = "longevity_plan.pdf"
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", size=12)
         pdf.multi_cell(0, 10, latest_plan)
+        pdf_path = "longevity_plan.pdf"
         pdf.output(pdf_path)
 
         with open(pdf_path, "rb") as f:
