@@ -14,6 +14,7 @@ st.set_page_config(page_title="EverAge: Longevity Copilot", layout="wide")
 DATA_FILE = "data/user_data.json"
 
 # ========== LOGIN PANEL ==========
+st.image("static/everage_logo.png", width=300)
 st.sidebar.title("🔐 EverAge Login")
 username = st.sidebar.text_input("Enter your email or username").strip().lower()
 if not username:
