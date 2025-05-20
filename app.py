@@ -55,20 +55,20 @@ def send_email_with_pdf(to_email, pdf_path):
 
     return response.status_code == 202
 
-# === Inside Tab 4: Replace Existing Code ===
 # --- Tab 4 ---
-with tabs[3]:
-    st.subheader("📄 Download & Email Your Plan")
-    if st.session_state.history:
-        latest_plan = st.session_state.history[-1]
-        pdf_path = "longevity_plan.pdf"
-        st.markdown(generate_pdf(latest_plan), unsafe_allow_html=True)
+if 'tabs' in locals():
+    with tabs[3]:
+        st.subheader("📄 Download & Email Your Plan")
+        if st.session_state.history:
+            latest_plan = st.session_state.history[-1]
+            pdf_path = "longevity_plan.pdf"
+            st.markdown(generate_pdf(latest_plan), unsafe_allow_html=True)
 
-        email_input = st.text_input("📬 Enter your email to receive this plan:")
-        if st.button("Send Plan via Email"):
-            if send_email_with_pdf(email_input, pdf_path):
-                st.success("✅ Email sent successfully!")
-            else:
-                st.error("❌ Failed to send email. Please try again.")
-    else:
-        st.info("No plan to export yet.")
+            email_input = st.text_input("📬 Enter your email to receive this plan:")
+            if st.button("Send Plan via Email"):
+                if send_email_with_pdf(email_input, pdf_path):
+                    st.success("✅ Email sent successfully!")
+                else:
+                    st.error("❌ Failed to send email. Please try again.")
+        else:
+            st.info("No plan to export yet.")
