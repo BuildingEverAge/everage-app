@@ -1,13 +1,6 @@
-# ✅ EverAge App: Unified Version
-# - Onboarding flow
-# - Profile display + update in sidebar
-# - Editable plan inputs
-# - Improved UI layout
-# - All-in-one production-ready app
-
 import streamlit as st
 import openai
-from datetime import datetime, timedelta
+from datetime import datetime
 import matplotlib.pyplot as plt
 from fpdf import FPDF
 import base64
@@ -20,16 +13,10 @@ openai.api_key = st.secrets["openai"]["api_key"]
 st.set_page_config(page_title="EverAge: Longevity Copilot", layout="wide")
 DATA_FILE = "data/user_data.json"
 
-# ========== USER LOGIN ==========
-st.image("static/everage_logo.png", width=300)
-st.sidebar.title("🔐 EverAge Login")
-username = st.sidebar.text_input("Enter your email or username").strip().lower()
-
-if not username:
-    st.warning("Please log in from the sidebar to continue.")
-    st.stop()
-
-st.write("✅ Logged in as:", username)
+# ========== SAFE RERUN FIX ==========
+if "_rerun_trigger" in st.session_state and st.session_state._rerun_trigger:
+    st.session_state._rerun_trigger = False
+    st.experimental_rerun()
 
 # ========== EMAIL FUNCTION ==========
 def send_email_with_pdf(to_email, pdf_path):
@@ -39,14 +26,14 @@ def send_email_with_pdf(to_email, pdf_path):
     data = {
         "personalizations": [{
             "to": [{"email": to_email}],
-            "subject": "Your EverAge Longevity Plan 📄"
+            "subject": "Your EverAge Longevity Plan \ud83d\udcc4"
         }],
         "from": {
             "email": st.secrets["sendgrid"]["from_email"]
         },
         "content": [{
             "type": "text/plain",
-            "value": "Hi! Here’s your personalized EverAge longevity plan attached as a PDF. 🙊"
+            "value": "Hi! Here’s your personalized EverAge longevity plan attached as a PDF. \ud83d\ude4a"
         }],
         "attachments": [{
             "content": file_data,
@@ -64,6 +51,15 @@ def send_email_with_pdf(to_email, pdf_path):
         json=data
     )
     return response.status_code == 202
+
+# ========== USER LOGIN ==========
+st.image("static/everage_logo.png", width=300)
+st.sidebar.title("\ud83d\udd10 EverAge Login")
+username = st.sidebar.text_input("Enter your email or username").strip().lower()
+if not username:
+    st.warning("Please log in from the sidebar to continue.")
+    st.stop()
+st.write("\u2705 Logged in as:", username)
 
 # ========== DATA LOAD/SAVE ==========
 def load_all_user_data():
@@ -96,8 +92,7 @@ st.session_state.setdefault("user_email", user_data.get("user_email", ""))
 
 # ========== ONBOARDING FLOW ==========
 def run_onboarding():
-    st.write("🧪 Entered onboarding flow")
-    st.title("👋 Welcome to EverAge")
+    st.title("\ud83d\udc4b Welcome to EverAge")
     st.markdown("Let's personalize your experience with a few quick questions.")
     step = st.session_state.get("onboarding_step", 0)
 
@@ -139,14 +134,207 @@ def run_onboarding():
             save_user_data({**user_data, **profile})
             st.session_state.onboarding_complete = True
             st.session_state._rerun_trigger = True
-            st.stop()
+            st.experimental_rerun()
 
-# ✅ FINAL ONBOARDING CHECK
 if not st.session_state.onboarding_complete:
     run_onboarding()
     st.stop()
 
-# ✅ Safe rerun trigger moved here to avoid early crash
-if st.session_state.get("_rerun_trigger", False):
-    st.session_state._rerun_trigger = False
-    st.experimental_rerun()
+# ===== The rest of your app continues here (tabs, AI, tracker, export, etc.) =====
+
+
+
+
+
+
+
+
+# ========== SIDEBAR PROFILE ==========
+st.sidebar.markdown("---")
+st.sidebar.header("👤 Your Profile")
+st.sidebar.markdown(f"**Name:** {user_data.get('name', 'N/A')}")
+st.sidebar.markdown(f"**Age:** {user_data.get('age', 'N/A')}")
+st.sidebar.markdown(f"**Goals:** {user_data.get('goals', 'N/A')}")
+
+if st.sidebar.button("✏️ Edit Profile"):
+    st.session_state.onboarding_complete = False
+    st.session_state.onboarding_step = 0
+    st.session_state._rerun_trigger = True
+
+
+
+# ========== AI FUNCTIONS ==========
+def get_ai_plan(prompt):
+    structured_prompt = f"{prompt}\n\nPlease return a clearly formatted longevity plan with these sections:\n- Sleep\n- Exercise\n- Diet\n- Stress Management\nInclude 5 daily habits in a section titled 'Daily Habits'."
+    response = openai.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a longevity coach..."},
+            {"role": "user", "content": structured_prompt}
+        ]
+    )
+    return response.choices[0].message.content.strip()
+
+def extract_habits(plan_text):
+    response = openai.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "Extract exactly 5 clear habits."},
+            {"role": "user", "content": plan_text}
+        ]
+    )
+    return [line.strip("•- ").strip() for line in response.choices[0].message.content.strip().split("\n") if line.strip()][:5]
+
+def calculate_scores(prompt):
+    response = openai.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "Score Sleep, Diet, Exercise, Stress (0-100)."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    lines = response.choices[0].message.content.split("\n")
+    scores = {}
+    for line in lines:
+        if ":" in line:
+            k, v = line.split(":", 1)
+            try:
+                scores[k.strip()] = int(v.strip())
+            except:
+                pass
+    return scores
+
+def calculate_streaks(checkins, habits):
+    streaks = {h: {"current": 0, "best": 0} for h in habits}
+    log = {h: [] for h in habits}
+    for entry in checkins:
+        d = datetime.strptime(entry["date"], "%Y-%m-%d").date()
+        for i, done in enumerate(entry["checked"]):
+            log[habits[i]].append((d, done))
+    for h, l in log.items():
+        l.sort()
+        cur = best = 0
+        prev = None
+        for d, done in l:
+            if done:
+                cur = cur + 1 if prev and (d - prev).days == 1 else 1
+                best = max(best, cur)
+            else:
+                cur = 0
+            prev = d
+        streaks[h] = {"current": cur, "best": best}
+    return streaks
+
+# ========== MAIN TABS ==========
+st.title("🧬 EverAge: Your Longevity Copilot")
+tabs = st.tabs(["📝 Create Plan", "✅ Tracker", "📈 Progress", "📄 Export"])
+
+# --- Tab 1: Create Plan ---
+with tabs[0]:
+    st.subheader("Tell us about yourself 🧠")
+    age = st.number_input("Age", min_value=18, max_value=100, value=user_data.get("age", 30))
+    activity = st.selectbox("Activity Level", ["Low", "Moderate", "High"], index=["Low", "Moderate", "High"].index(user_data.get("activity", "Moderate")))
+    sleep = st.selectbox("Sleep Quality", ["Poor", "Average", "Good"], index=["Poor", "Average", "Good"].index(user_data.get("sleep", "Average")))
+    stress = st.selectbox("Stress Level", ["High", "Moderate", "Low"], index=["High", "Moderate", "Low"].index(user_data.get("stress", "Moderate")))
+    diet = st.selectbox("Diet Type", ["Standard", "Vegetarian", "Keto", "Mediterranean"], index=["Standard", "Vegetarian", "Keto", "Mediterranean"].index(user_data.get("diet", "Standard")))
+    goals = st.text_area("Health Goals", value=user_data.get("goals", ""))
+    email = st.text_input("Your Email", value=st.session_state.user_email)
+
+    if st.button("🧪 Generate My Longevity Plan"):
+        prompt = f"Age: {age}, Activity: {activity}, Sleep: {sleep}, Stress: {stress}, Diet: {diet}, Goals: {goals}"
+        plan = get_ai_plan(prompt)
+        st.session_state.history.append(plan)
+        st.session_state.habits = extract_habits(plan)
+        st.session_state.scores = calculate_scores(prompt)
+        st.session_state.user_email = email
+        save_user_data({
+            **user_data,
+            "history": st.session_state.history,
+            "habits": st.session_state.habits,
+            "scores": st.session_state.scores,
+            "checkins": st.session_state.checkins,
+            "user_email": email
+        })
+        st.success("✅ Plan created!")
+        st.markdown(plan)
+
+    if st.button("♻️ Regenerate My Plan") and st.session_state.history:
+        prompt = f"Age: {age}, Activity: {activity}, Sleep: {sleep}, Stress: {stress}, Diet: {diet}, Goals: {goals}"
+        plan = get_ai_plan(prompt)
+        st.session_state.history[-1] = plan
+        st.session_state.habits = extract_habits(plan)
+        st.session_state.scores = calculate_scores(prompt)
+        st.markdown(plan)
+
+# --- Tab 2: Daily Tracker ---
+with tabs[1]:
+    st.subheader("🗓️ Daily Check-in")
+    if st.session_state.habits:
+        today = datetime.now().strftime("%Y-%m-%d")
+        checks = [st.checkbox(h, key=f"chk_{i}") for i, h in enumerate(st.session_state.habits)]
+        if st.button("Submit Today’s Check-in"):
+            st.session_state.checkins.append({"date": today, "checked": checks})
+            save_user_data({
+                **user_data,
+                "history": st.session_state.history,
+                "habits": st.session_state.habits,
+                "scores": st.session_state.scores,
+                "checkins": st.session_state.checkins,
+                "user_email": st.session_state.user_email
+            })
+            st.success("📌 Check-in saved!")
+    else:
+        st.info("Please generate a plan first.")
+
+# --- Tab 3: Progress ---
+with tabs[2]:
+    st.subheader("📈 Weekly Progress")
+    if not st.session_state.checkins:
+        st.info("No check-ins yet.")
+    else:
+        labels = [c["date"] for c in st.session_state.checkins]
+        values = [sum(c["checked"]) for c in st.session_state.checkins]
+        fig, ax = plt.subplots(figsize=(8, 4))
+        ax.bar(labels, values)
+        ax.set_title("📊 Weekly Habit Progress")
+        ax.set_ylabel("Habits Completed")
+        ax.set_ylim(0, 5)
+        ax.set_xticklabels(labels, rotation=45)
+        st.pyplot(fig)
+
+    if st.session_state.scores:
+        st.markdown("**🧠 Health Scores:**")
+        for k, v in st.session_state.scores.items():
+            st.progress(v / 100, text=f"{k}: {v}")
+
+    if st.session_state.habits:
+        streaks = calculate_streaks(st.session_state.checkins, st.session_state.habits)
+        st.subheader("🔥 Habit Streaks")
+        for h, s in streaks.items():
+            st.markdown(f"**{h}** — Current: {s['current']} 🔁 | Best: {s['best']} 🏆")
+
+# --- Tab 4: Export Plan ---
+with tabs[3]:
+    st.subheader("📄 Export Plan")
+    if st.session_state.history:
+        latest_plan = st.session_state.history[-1]
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.multi_cell(0, 10, latest_plan)
+        pdf_path = "longevity_plan.pdf"
+        pdf.output(pdf_path)
+
+        with open(pdf_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
+        href = f'<a href="data:application/octet-stream;base64,{b64}" download="longevity_plan.pdf">📄 Download Plan as PDF</a>'
+        st.markdown(href, unsafe_allow_html=True)
+
+        email_input = st.text_input("📬 Email to send to:", value=st.session_state.user_email)
+        if st.button("Send Plan via Email"):
+            if send_email_with_pdf(email_input, pdf_path):
+                st.success("✅ Email sent!")
+            else:
+                st.error("❌ Email failed.")
+    else:
+        st.info("No plan available to export.")
