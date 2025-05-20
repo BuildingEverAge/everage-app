@@ -23,7 +23,7 @@ DATA_FILE = "data/user_data.json"
 # ========== SAFE RERUN FIX ==========
 if "_rerun_trigger" in st.session_state and st.session_state._rerun_trigger:
     st.session_state._rerun_trigger = False
-    st.experimental_rerun()
+    st.stop()
 
 # ========== EMAIL FUNCTION ==========
 def send_email_with_pdf(to_email, pdf_path):
@@ -140,7 +140,7 @@ def run_onboarding():
             save_user_data({**user_data, **profile})
             st.session_state.onboarding_complete = True
             st.session_state._rerun_trigger = True
-            st.experimental_rerun()
+            st.stop()
 
 if not st.session_state.onboarding_complete:
     run_onboarding()
