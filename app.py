@@ -143,17 +143,6 @@ if not st.session_state.onboarding_complete:
     run_onboarding()
     st.stop()
 
-# ========== SIDEBAR PROFILE ==========
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 👤 Your Profile")
-st.sidebar.markdown(f"**👤 Name:** {user_data.get('name', 'N/A')}")
-st.sidebar.markdown(f"**🎂 Age:** {user_data.get('age', 'N/A')}")
-st.sidebar.markdown(f"**🎯 Goals:** {user_data.get('goals', 'N/A')}")
-
-if st.sidebar.button("✏️ Edit Profile"):
-    st.session_state.onboarding_complete = False
-    st.session_state.onboarding_step = 0
-    st.session_state._rerun_trigger = True
 
 # ========== UI FEEDBACK ENHANCEMENTS ==========
 def show_plan_feedback():
