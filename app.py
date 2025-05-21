@@ -62,7 +62,7 @@ username = st.session_state.get("username", "")
 if not username:
     st.warning("Please log in from the sidebar to continue.")
     st.stop()
-st.write("✅ Logged in as:", username)
+st.markdown(f"👋 Hello, **{username}**! Let’s keep you living long and strong.")
 
 # ========== DATA LOAD/SAVE ==========
 def load_all_user_data():
@@ -137,31 +137,56 @@ def run_onboarding():
             save_user_data({**user_data, **profile})
             st.session_state.onboarding_complete = True
             st.session_state._rerun_trigger = True
-            st.write("✅ Finished onboarding, rerunning app...")
             st.rerun()
 
 if not st.session_state.onboarding_complete:
     run_onboarding()
     st.stop()
 
-# ===== The rest of your app continues here (tabs, AI, tracker, export, etc.) =====
-
-
-
-
-
-
 # ========== SIDEBAR PROFILE ==========
 st.sidebar.markdown("---")
-st.sidebar.header("👤 Your Profile")
-st.sidebar.markdown(f"**Name:** {user_data.get('name', 'N/A')}")
-st.sidebar.markdown(f"**Age:** {user_data.get('age', 'N/A')}")
-st.sidebar.markdown(f"**Goals:** {user_data.get('goals', 'N/A')}")
+st.sidebar.markdown("### 👤 Your Profile")
+st.sidebar.markdown(f"**👤 Name:** {user_data.get('name', 'N/A')}")
+st.sidebar.markdown(f"**🎂 Age:** {user_data.get('age', 'N/A')}")
+st.sidebar.markdown(f"**🎯 Goals:** {user_data.get('goals', 'N/A')}")
 
 if st.sidebar.button("✏️ Edit Profile"):
     st.session_state.onboarding_complete = False
     st.session_state.onboarding_step = 0
     st.session_state._rerun_trigger = True
+
+# ========== UI FEEDBACK ENHANCEMENTS ==========
+def show_plan_feedback():
+    st.success("✅ Plan created!")
+    st.toast("✅ Plan successfully generated!")
+    if len(st.session_state.history) == 1:
+        st.balloons()
+
+def show_checkin_success():
+    st.success("📌 Check-in saved! Great job staying consistent 💪")
+
+def show_score_metrics(scores):
+    cols = st.columns(len(scores))
+    for i, (k, v) in enumerate(scores.items()):
+        with cols[i]:
+            st.metric(label=k, value=f"{v}/100")
+
+# ====== MAIN TABS, TRACKER, PLAN, PROGRESS, EXPORT CONTINUE BELOW ======
+# ✅ Let me know when you're ready to re-merge the full functionality.
+
+
+# ========== SIDEBAR PROFILE ==========
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 👤 Your Profile")
+st.sidebar.markdown(f"**👤 Name:** {user_data.get('name', 'N/A')}")
+st.sidebar.markdown(f"**🎂 Age:** {user_data.get('age', 'N/A')}")
+st.sidebar.markdown(f"**🎯 Goals:** {user_data.get('goals', 'N/A')}")
+
+if st.sidebar.button("✏️ Edit Profile"):
+    st.session_state.onboarding_complete = False
+    st.session_state.onboarding_step = 0
+    st.session_state._rerun_trigger = True
+
 
 
 
