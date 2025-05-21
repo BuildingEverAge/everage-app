@@ -319,6 +319,7 @@ with tabs[1]:
 # --- Tab 3: Progress ---
 with tabs[2]:
     st.subheader("📈 Weekly Progress")
+    
     if not st.session_state.checkins:
         st.info("No check-ins yet.")
     else:
@@ -338,12 +339,13 @@ with tabs[2]:
             st.progress(v / 100, text=f"{k}: {v}")
 
     if st.session_state.habits:
-    streaks = calculate_streaks(st.session_state.checkins, st.session_state.habits)
-    st.subheader("🔥 Habit Streaks")
-    for h, s in streaks.items():
-        if s['current'] == 3:
-            st.success(f"🔥 You're on a 3-day streak for **{h}**! Keep it up!")
-        st.markdown(f"**{h}** — Current: {s['current']} 🔁 | Best: {s['best']} 🏆")
+        streaks = calculate_streaks(st.session_state.checkins, st.session_state.habits)
+        st.subheader("🔥 Habit Streaks")
+        for h, s in streaks.items():
+            if s['current'] == 3:
+                st.success(f"🔥 You're on a 3-day streak for **{h}**! Keep it up!")
+            st.markdown(f"**{h}** — Current: {s['current']} 🔁 | Best: {s['best']} 🏆")
+
 
 
 
