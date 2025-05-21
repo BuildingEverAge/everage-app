@@ -338,6 +338,7 @@ with tabs[2]:
         st.success(f"🔥 You're on a 3-day streak for **{h}**! Keep it up!")
     st.markdown(f"**{h}** — Current: {s['current']} 🔁 | Best: {s['best']} 🏆")
 
+
 # --- Tab 4: Export Plan ---
 with tabs[3]:
     st.subheader("📄 Export Plan")
