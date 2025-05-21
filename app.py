@@ -52,6 +52,13 @@ def send_email_with_pdf(to_email, pdf_path):
     )
     return response.status_code == 202
 
+# ========== PLAN HISTORY VIEWER ==========
+if st.session_state.get("history"):
+    st.markdown("### 📜 View Previous Plans")
+    selected_index = st.selectbox("Select a Plan", list(range(len(st.session_state.history))), format_func=lambda i: f"Plan {i + 1}")
+    st.markdown(st.session_state.history[selected_index])
+
+
 # ========== USER LOGIN ==========
 st.image("static/everage_logo.png", width=300)
 st.sidebar.title("🔐 EverAge Login")
@@ -327,7 +334,9 @@ with tabs[2]:
         streaks = calculate_streaks(st.session_state.checkins, st.session_state.habits)
         st.subheader("🔥 Habit Streaks")
         for h, s in streaks.items():
-            st.markdown(f"**{h}** — Current: {s['current']} 🔁 | Best: {s['best']} 🏆")
+    if s['current'] == 3:
+        st.success(f"🔥 You're on a 3-day streak for **{h}**! Keep it up!")
+    st.markdown(f"**{h}** — Current: {s['current']} 🔁 | Best: {s['best']} 🏆")
 
 # --- Tab 4: Export Plan ---
 with tabs[3]:
