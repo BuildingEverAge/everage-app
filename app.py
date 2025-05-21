@@ -55,7 +55,10 @@ def send_email_with_pdf(to_email, pdf_path):
 # ========== USER LOGIN ==========
 st.image("static/everage_logo.png", width=300)
 st.sidebar.title("🔐 EverAge Login")
-username = st.sidebar.text_input("Enter your email or username").strip().lower()
+username_input = st.sidebar.text_input("Enter your email or username").strip().lower()
+if username_input:
+    st.session_state.username = username_input
+username = st.session_state.get("username", "")
 if not username:
     st.warning("Please log in from the sidebar to continue.")
     st.stop()
@@ -73,7 +76,7 @@ def save_all_user_data(all_data):
         json.dump(all_data, f, indent=2)
 
 def load_user_data():
-    return load_all_user_data().get(username, {})
+    return load_all_user_data().get(username, {}) or {}
 
 def save_user_data(user_data):
     all_data = load_all_user_data()
@@ -134,6 +137,7 @@ def run_onboarding():
             save_user_data({**user_data, **profile})
             st.session_state.onboarding_complete = True
             st.session_state._rerun_trigger = True
+            st.write("✅ Finished onboarding, rerunning app...")
             st.rerun()
 
 if not st.session_state.onboarding_complete:
