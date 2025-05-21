@@ -58,6 +58,13 @@ if st.session_state.get("history"):
     selected_index = st.selectbox("Select a Plan", list(range(len(st.session_state.history))), format_func=lambda i: f"Plan {i + 1}")
     st.markdown(st.session_state.history[selected_index])
 
+# ========== STREAK MILESTONE CELEBRATION FIX ==========
+# Replace inside Progress tab loop
+# Example:
+# for h, s in streaks.items():
+    
+
+
 
 # ========== USER LOGIN ==========
 st.image("static/everage_logo.png", width=300)
