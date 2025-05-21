@@ -13,6 +13,76 @@ openai.api_key = st.secrets["openai"]["api_key"]
 st.set_page_config(page_title="EverAge: Longevity Copilot", layout="wide")
 DATA_FILE = "data/user_data.json"
 
+# ========== CUSTOM UI STYLE ==========
+st.markdown("""
+<style>
+/* Global font and body */
+body {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Page title */
+h1 {
+    font-size: 2.2em !important;
+    color: #0A7E8C;
+}
+
+/* Section headers */
+h2, h3, .stMarkdown h3 {
+    color: #157575;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+
+/* Sidebar styling */
+.css-1d391kg {
+    background-color: #f5f9fa !important;
+    padding: 1rem !important;
+    border-radius: 12px !important;
+}
+
+/* Button style override */
+div.stButton > button {
+    background-color: #0A7E8C;
+    color: white;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    border: none;
+    transition: all 0.3s ease;
+}
+div.stButton > button:hover {
+    background-color: #0E99A5;
+}
+
+/* Input boxes */
+.stTextInput input, .stTextArea textarea {
+    border-radius: 8px !important;
+    border: 1px solid #d0dfe4 !important;
+    padding: 0.4rem 0.6rem !important;
+}
+
+/* Tabs */
+.css-1hynsf2 {
+    background-color: #eaf4f5;
+    padding: 1rem;
+    border-radius: 12px;
+}
+
+/* Section separator */
+hr {
+    border-top: 1px solid #ccc;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+</style>
+<h3 style='text-align: center; color: #157575; font-style: italic; margin-top: 0.5em;'>
+Live Smarter. Live Longer.
+</h3>
+""", unsafe_allow_html=True)
+
+
+
 # ========== SAFE RERUN FIX ==========
 if "_rerun_trigger" in st.session_state and st.session_state._rerun_trigger:
     st.session_state._rerun_trigger = False
