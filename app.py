@@ -137,7 +137,6 @@ if st.session_state.get("history"):
 
 
 # ========== USER LOGIN ==========
-st.image("static/everage_logo.png", width=300)
 st.sidebar.title("🔐 EverAge Login")
 username_input = st.sidebar.text_input("Enter your email or username").strip().lower()
 if username_input:
@@ -147,6 +146,7 @@ if not username:
     st.warning("Please log in from the sidebar to continue.")
     st.stop()
 st.markdown(f"👋 Hello, **{username}**! Let’s keep you living long and strong.")
+
 
 # ========== DATA LOAD/SAVE ==========
 def load_all_user_data():
