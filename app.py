@@ -431,8 +431,15 @@ with tabs[3]:
         latest_plan = st.session_state.history[-1]
         pdf = FPDF()
         pdf.add_page()
-        pdf.image("static/everage_full_logo.png", x=10, y=10, w=60)  # 🧬 Add EverAge logo
-        pdf.set_y(42)  # ✅ Slightly more compact spacing
+
+        # Center the logo horizontally
+        page_width = pdf.w - 2 * pdf.l_margin
+        logo_width = 60
+        logo_x = (page_width - logo_width) / 2 + pdf.l_margin
+        pdf.image("static/everage_full_logo.png", x=logo_x, y=12, w=logo_width)
+
+        # Space below logo
+        pdf.set_y(50)
         pdf.set_font("Arial", size=12)
         pdf.multi_cell(0, 10, latest_plan)
         pdf_path = "longevity_plan.pdf"
@@ -451,4 +458,5 @@ with tabs[3]:
                 st.error("❌ Email failed.")
     else:
         st.info("No plan available to export.")
+
 
