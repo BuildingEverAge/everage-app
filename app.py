@@ -432,14 +432,16 @@ with tabs[3]:
         pdf = FPDF()
         pdf.add_page()
 
-        # Center the logo horizontally
-        page_width = pdf.w - 2 * pdf.l_margin
-        logo_width = 60
-        logo_x = (page_width - logo_width) / 2 + pdf.l_margin
-        pdf.image("static/everage_full_logo.png", x=logo_x, y=12, w=logo_width)
+        # 🧬 Small top-right logo
+        logo_width = 30
+        margin_right = 10
+        margin_top = 8
+        page_width = pdf.w
+        logo_x = page_width - logo_width - margin_right
+        pdf.image("static/everage_full_logo.png", x=logo_x, y=margin_top, w=logo_width)
 
-        # Space below logo
-        pdf.set_y(50)
+        # 📝 Content below
+        pdf.set_y(28)
         pdf.set_font("Arial", size=12)
         pdf.multi_cell(0, 10, latest_plan)
         pdf_path = "longevity_plan.pdf"
