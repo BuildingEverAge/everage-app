@@ -249,6 +249,7 @@ def show_score_metrics(scores):
 
 
 # ========== SIDEBAR PROFILE ==========
+st.sidebar.image("static/everage_icon.png", width=80)  # 🌀 Icon-only logo
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 👤 Your Profile")
 st.sidebar.markdown(f"**👤 Name:** {user_data.get('name', 'N/A')}")
@@ -259,6 +260,10 @@ if st.sidebar.button("✏️ Edit Profile"):
     st.session_state.onboarding_complete = False
     st.session_state.onboarding_step = 0
     st.session_state._rerun_trigger = True
+
+# ========== MAIN SCREEN LOGO ==========
+st.image("static/everage_full_logo.png", width=300)  # 🧬 Full logo on homepage
+
 
 
 
