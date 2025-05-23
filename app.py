@@ -7,14 +7,13 @@ st.set_page_config(
 )
 
 # ========== LANDING PAGE ==========
-st.image("static/everage_full_logo.png", width=260)
-
+st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+st.image("static/everage_full_logo.png", width=240)
 st.markdown("""
-<h1 style='text-align: center; color: #0A7E8C; font-size: 2.5em;'>Live Smarter. Live Longer.</h1>
-<p style='text-align: center; font-size: 1.2em; color: #444;'>
-EverAge is your AI-powered longevity copilot. Personalized plans. Smart health habits. All in one place.
-</p>
+    <h1 style='color: #0A7E8C; font-size: 2.5em; margin-bottom: 0.2em;'>Live Smarter. Live Longer.</h1>
+    <p style='font-size: 1.2em; color: #444;'>Your AI-powered longevity copilot.</p>
 """, unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -32,4 +31,5 @@ with col1:
 with col2:
     st.markdown("### 🚀 Ready to Start?")
     if st.button("Start EverAge AI App"):
-        st.switch_page("EverAge AI App")  # ✅ Use display name, not file path
+        st.switch_page("EverAge AI App")  # ✅ Page title only
+
