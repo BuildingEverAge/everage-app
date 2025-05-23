@@ -32,4 +32,4 @@ with col1:
 with col2:
     st.markdown("### 🚀 Ready to Start?")
     if st.button("Start EverAge AI App"):
-        st.switch_page("pages/EverAge AI App.py")
+        st.switch_page("EverAge AI App")  # ✅ Use display name, not file path
