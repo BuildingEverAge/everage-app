@@ -6,6 +6,10 @@ st.set_page_config(
     layout="wide"
 )
 
+# ========== AUTO-REDIRECT IF LOGGED IN ==========
+if st.session_state.get("username"):
+    st.switch_page("pages/EverAge AI App.py")  # ✅ Must use file path
+
 # ========== LANDING PAGE ==========
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
 st.image("static/everage_full_logo.png", width=240)
@@ -31,5 +35,5 @@ with col1:
 with col2:
     st.markdown("### 🚀 Ready to Start?")
     if st.button("Start EverAge AI App"):
-        st.switch_page("EverAge AI App")  # ✅ Page title only
+        st.switch_page("pages/EverAge AI App.py")  # ✅ Use correct file path
 
