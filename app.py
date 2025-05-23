@@ -8,7 +8,7 @@ st.set_page_config(
 
 # ========== AUTO-REDIRECT IF LOGGED IN ==========
 if st.session_state.get("username"):
-    st.switch_page("pages/EverAge AI App.py")  # ✅ Must use file path
+    st.switch_page("pages/EverAge AI App.py")  # ✅ Redirect if logged in
 
 # ========== LANDING PAGE ==========
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
@@ -35,5 +35,11 @@ with col1:
 with col2:
     st.markdown("### 🚀 Ready to Start?")
     if st.button("Start EverAge AI App"):
-        st.switch_page("pages/EverAge AI App.py")  # ✅ Use correct file path
+        st.switch_page("pages/EverAge AI App.py")
 
+    st.markdown("or")
+
+    if st.button("🔍 Try Without Login"):
+        st.session_state.username = "demo_user"
+        st.session_state.demo_mode = True
+        st.switch_page("pages/EverAge AI App.py")

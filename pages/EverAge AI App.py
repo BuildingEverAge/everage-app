@@ -13,6 +13,18 @@ openai.api_key = st.secrets["openai"]["api_key"]
 st.set_page_config(page_title="EverAge: Longevity Copilot", layout="wide")
 DATA_FILE = "data/user_data.json"
 
+# ========== PUBLIC PREVIEW MODE SUPPORT ==========
+if st.session_state.get("demo_mode"):
+    st.warning("🔓 You are using a public preview mode. Data won’t be saved.")
+    username = "demo_user"
+    user_data = {}
+else:
+    username = st.session_state.get("username", "")
+    if not username:
+        st.error("🚫 Please login from the main page.")
+        st.stop()
+
+
 # ========== CUSTOM UI STYLE ==========
 st.markdown("""
 <style>
