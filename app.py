@@ -1,16 +1,14 @@
+import os
+import json
 import streamlit as st
-
-st.set_page_config(
-    page_title="EverAge | Longevity Copilot",
-    page_icon="🧬",
-    layout="wide"
-)
 
 # ========== AUTO-REDIRECT IF LOGGED IN ==========
 if st.session_state.get("username"):
-    st.switch_page("pages/EverAge AI App.py")  # ✅ Redirect if logged in
+    st.switch_page("pages/EverAge AI App.py")
 
 # ========== LANDING PAGE ==========
+st.set_page_config(page_title="EverAge | Longevity Copilot", page_icon="🧬", layout="wide")
+
 st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
 st.image("static/everage_full_logo.png", width=240)
 st.markdown("""
@@ -35,6 +33,8 @@ with col1:
 with col2:
     st.markdown("### 🚀 Ready to Start?")
     if st.button("Start EverAge AI App"):
+        st.session_state.username = "guest_user"
+        st.session_state.demo_mode = False
         st.switch_page("pages/EverAge AI App.py")
 
     st.markdown("or")
@@ -43,3 +43,29 @@ with col2:
         st.session_state.username = "demo_user"
         st.session_state.demo_mode = True
         st.switch_page("pages/EverAge AI App.py")
+
+    st.markdown("---")
+    st.markdown("### 📬 Stay in the loop")
+    email_input = st.text_input("Leave your email to get updates:")
+
+    if st.button("📩 Notify Me"):
+        if email_input and "@" in email_input:
+            os.makedirs("data", exist_ok=True)
+            email_file = "data/emails.json"
+            if os.path.exists(email_file):
+                with open(email_file, "r") as f:
+                    emails = json.load(f)
+            else:
+                emails = []
+
+            if email_input not in emails:
+                emails.append(email_input)
+                with open(email_file, "w") as f:
+                    json.dump(emails, f, indent=2)
+                st.success("✅ You’ll be the first to know!")
+            else:
+                st.info("📧 You already signed up!")
+        else:
+            st.warning("Please enter a valid email.")
+
+
