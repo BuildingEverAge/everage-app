@@ -19,6 +19,8 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("---")
 
+import os
+
 col1, col2 = st.columns([2, 1])
 with col1:
     st.markdown("### 🧠 What You Get")
@@ -29,6 +31,19 @@ with col1:
     - PDF + email reports  
     - All powered by GPT-4  
     """)
+
+    gif_path = os.path.join("static", "demo.gif")
+    if os.path.exists(gif_path):
+        st.markdown("### 🔍 See EverAge in Action")
+        st.image(gif_path, use_container_width=True)
+    else:
+        st.markdown("### 🔍 See EverAge in Action")
+        st.info("🚫 Demo GIF not found. Please add 'demo.gif' to the static/ folder.")
+
+
+
+
+
 
 with col2:
     st.markdown("### 🚀 Ready to Start?")
